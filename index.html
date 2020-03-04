@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <script src="/socket.io/socket.io.js"></script>
+        <title>Anritsu Cable Tester</title>
+        <style type="text/css">
+            input, button, select, option, textarea {
+                display: block;
+                margin: 5px;
+                padding: 5px;
+            }
+        </style>
+    </head>
+    <body>
+        <h2>Anritsu Cable Tester</h2>
+        <button onclick="getDeviceConnectionList()">Get Device Connection List</button>
+    <select id="allDevices" name="allDevices"></select>
+    <br>
+    <!-- *IDN? -->
+    <input type="text" id="command" placeholder="SCPI command"/>
+    <button onclick="sendCommand()">Send Command</button>
+
+    <br>
+    <!-- <textarea id="w3mission" rows="4" cols="50"></textarea> -->
+    <input type="text" id="scanner" placeholder="Place scanner here"/>
+    
+    <script>
+    var socket = io();
+    
+    // 01
+    socket.on('socket-ready', function(){
+        console.log("socket ready on server");
+    });
+
+    // 02
+    function getDeviceConnectionList(){
+        socket.emit('get-devices');
+    }
+
+    // 03
+    socket.on('device-list', function(data){
+        var select = document.getElementById("allDevices");
+        for(var i = 0; i < data.length; i++) {
+            var option = document.createElement('option');
+            option.text = option.value = data[i];
+            select.add(option, 0);
+        }
+    });
+
+    // 04
+    function sendCommand(){
+        var command = document.getElementById("command").value;
+        var address = document.getElementById("allDevices").value;
+        socket.emit('command', {addr: address, cmd: command});
+    }
+
+    // 05
+    socket.on('command-success', function(data){
+        console.log("command success", data);
+    });
+
+    function scannerInit() {
+        document.getElementById("scanner").addEventListener("input", function (){
+            scannerDetect(this.value);
+        });
+    }
+
+    function scannerReset(){
+        document.getElementById("scanner").disabled = false;
+        document.getElementById("scanner").value = "";
+        document.getElementById("scanner").focus();
+    }
+
+    function scannerPause() {
+        document.getElementById("scanner").disabled = true;
+    }
+
+    function scannerDetect(value){
+        scannerPause();
+        storeCableInfo(value);
+    }
+
+
+    function storeCableInfo(value){
+        var timer = setTimeout(function(){
+            clearInterval(timer);
+            console.log("value stored: ", value);
+            scannerReset();
+        }, 2000);
+    }
+
+    scannerInit();
+
+
+
+    </script>
+</body>
+</html>
