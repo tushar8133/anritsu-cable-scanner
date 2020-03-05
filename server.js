@@ -94,10 +94,8 @@ function getDeviceList(query){
 }
 
 function sendSCPI(address, query){
-    var address = (address == "")? 'USB0::0x0B5B::0xFFF9::1630010_7880_57::INSTR' : address;
-    console.log(">>", address)
+    var address = (address == "")? defaultAddress : address;
     return new Promise((resolve, reject) => {
-        // [status, sesn] = visa.viOpenDefaultRM();
         try {
             [status, vi] = visa.viOpen(sesn, address);
             resp = visa.vhQuery(vi, query);
@@ -112,10 +110,8 @@ function sendSCPI(address, query){
 }
 
 async function toggleScreen(data) {
-    console.log(">", data)
     if(data.num === 2) var setPIMScreen = await sendSCPI(data.address, "SENSe:PIManalyzer:MODe PIM");
     if(data.num === 3) var PIMAnalyzerMode = await sendSCPI(data.address, ":INSTrument:NSELect 46");
-    console.log("screen changed");
 }
 
 async function startScannerTestingManual(data) {
@@ -123,7 +119,7 @@ async function startScannerTestingManual(data) {
     var power = await sendSCPI(data.address, ":PIManalyzer:OUTPut:POWer " + data.power);
     var duration = await sendSCPI(data.address, ":PIManalyzer:TEST:DURation " + data.duration);
     // var measure = await sendSCPI(data.address, "INITiate:PIManalyzer:MEASure ON");
-    console.log("final >>>", power, duration)
+    console.log("done >>>")
 }
 
 async function startScannerTestingInit(address) {
@@ -137,9 +133,3 @@ async function startScannerTestingAuto(data) {
     var peakValue = await sendSCPI(data.address, ":PIManalyzer:MEASure:VALue?");
     io.emit('send-more', peakValue);
 }
-
-/*
-let a, b, c, d, e = 0;
-[status, a, b, c, d, e] = visa.viParseRsrc(sesn, deviceId[1]);
-console.log(status, vcon.decodeStatus(status), a, b, c, d, e);
-*/

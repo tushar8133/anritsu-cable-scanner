@@ -48,17 +48,24 @@ function scannerPause() {
 }
 
 function scannerDetect(value){
-    scannerPause();
+    var str = "";
+    if(value == "get-scanner-manual") {
+        str = value;
+    } else {
+        str = "get-scanner-auto";
+        scannerPause();
+    }
+    
     var address = window['deviceAddress'];
     var power = document.getElementById('outputPowerLevel').value;
     var duration = document.getElementById('testDuration').value;
     // 06
-    socket.emit('get-scanner-auto', {address: address, power: power, duration: duration});
+    socket.emit(str, {address: address, power: power, duration: duration});
 }
 
 function startScannerTesting() {
     counter = 0;
-    scannerDetect(0);
+    scannerDetect("get-scanner-manual");
 }
 
 function toggleScreen(num) {
@@ -80,17 +87,15 @@ function storeCableInfo(value){
 }
 
 socket.on('send-more', function(data){
-    if(!counter) {
-        counter++;
-        scannerReset();
-        return;
-    }
+    // if(!counter) {
+    //     scannerReset();
+    //     return;
+    // }
     var oldData = document.getElementById("textarea-scanner").value;
     var serialNumber = document.getElementById("scanner").value;
     var peakValue = formatPeakData(data);
     var date = new Date();
-    document.getElementById("textarea-scanner").value = `${oldData}\n\n${counter} >> ${serialNumber} >> ${peakValue} >> ${date}`;
-    counter++;
+    document.getElementById("textarea-scanner").value = `${oldData}\n\n${++counter} >> ${serialNumber} >> ${peakValue} >> ${date}`;
     scannerReset();
 });
 
