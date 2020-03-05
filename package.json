@@ -1,0 +1,19 @@
+{
+  "name": "visa",
+  "version": "1.0.0",
+  "description": "An FFI module exposing the NI VISA library",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Peter Torelli <peter@petertorelli.com>",
+  "license": "Apache 2.0",
+  "dependencies": {
+    "debug": "^4.1.1",
+    "express": "^4.17.1",
+    "ffi": "^2.3.0",
+    "socket.io": "^2.3.0",
+    "socket.io-client": "^2.3.0",
+    "sprintf-js": "^1.1.2"
+  }
+}

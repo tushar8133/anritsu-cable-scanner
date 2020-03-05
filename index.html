@@ -2,98 +2,124 @@
 <html>
     <head>
         <meta charset="utf-8" />
-        <script src="/socket.io/socket.io.js"></script>
         <title>Anritsu Cable Tester</title>
         <style type="text/css">
-            input, button, select, option, textarea {
-                display: block;
-                margin: 5px;
-                padding: 5px;
+            html, body {
+                height: 80%;
             }
+
+            input, button, select, option, textarea {
+                /*display: block;*/
+                margin: 5px 0;
+                padding: 5px;
+                /*width: 100%;*/
+                box-sizing: border-box;
+                border: 1px solid #E0E0E0;
+            }
+
+            button {
+                width: 120px;
+            }
+            input, select, textarea {
+                width: 80%;
+            }
+
+            nav button {
+                color: white;
+                background-color: #289B7D;
+                /*height: 35px;*/
+            }
+
+            #textarea-scanner {
+                width: 100%;
+                height: 40%
+            }
+
+            br {
+                display: block;
+                content: "";
+                margin-top: 50px;
+            }
+
+            #tab2 input, textarea {
+                border: 1px solid black;
+            }
+
+            #tab2 input {
+                width: 50px;
+            }
+
+            #tab2 label {
+                display: block;
+            }
+
+            #scanner {
+                width: 200px !important;
+                height: 50px;
+            }
+
+
+
         </style>
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="index.js"></script>
+        
     </head>
     <body>
         <h2>Anritsu Cable Tester</h2>
-        <button onclick="getDeviceConnectionList()">Get Device Connection List</button>
-    <select id="allDevices" name="allDevices"></select>
-    <br>
-    <!-- *IDN? -->
-    <input type="text" id="command" placeholder="SCPI command"/>
-    <button onclick="sendCommand()">Send Command</button>
 
-    <br>
-    <!-- <textarea id="w3mission" rows="4" cols="50"></textarea> -->
-    <input type="text" id="scanner" placeholder="Place scanner here"/>
-    
-    <script>
-    var socket = io();
-    
-    // 01
-    socket.on('socket-ready', function(){
-        console.log("socket ready on server");
-    });
+        <nav>
+            <button onclick="toggleTab(1)">Input/Output Settings</button>
+            <button onclick="toggleTab(3)">PIM Mode</button>
+            <button onclick="toggleTab(2)">PIM vs. Time Testing</button>
+        </nav>
 
-    // 02
-    function getDeviceConnectionList(){
-        socket.emit('get-devices');
-    }
+        <p><hr></p>
 
-    // 03
-    socket.on('device-list', function(data){
-        var select = document.getElementById("allDevices");
-        for(var i = 0; i < data.length; i++) {
-            var option = document.createElement('option');
-            option.text = option.value = data[i];
-            select.add(option, 0);
+    <div id="tab1">
+        <button onclick="getDeviceConnectionList()">Connections</button>
+        <select id="allDevices" name="allDevices"></select>
+        <br>
+        <!-- SCPI >> *IDN? -->
+        <!-- <input type="text" id="command" placeholder="SCPI command" value="*IDN?"/> -->
+        <!-- ["*IDN?", ":MMEMory:STORe:JPEG 'tushar2'"]; -->
+        <!-- <button onclick="sendCommand('*IDN?')">SCPI *IDN?</button> -->
+        <!-- <br> -->
+        <!-- SCPI >> ANY -->
+        <input type="text" id="command" placeholder="SCPI command" value="*IDN?"/>
+        <button onclick="sendCommand(document.getElementById('command').value)">Send Command</button>
+        <br>
+        <label>Machine Response:
+        <textarea id="textarea-scpi" rows="10" cols="60"></textarea>
+        </label>
+    </div>
+
+    <div id="tab2" style="height: 100%">
+        <label>Output Power Level (dBm): <input type="number" value="43" min="20" max="46" id="outputPowerLevel" /></label>
+        <label>Test Duration (sec): <input type="number" value="30" min="1" max="600" id="testDuration" /></label>
+        <button onclick="startScannerTesting()">DONE</button>
+        <br>
+        <!-- <button onclick="startScannerTestingInit()">START AUTO TEST</button><br> -->
+        <input type="text" id="scanner" placeholder="Place scanner here" onchange="scannerDetect(this.value)"/>
+        <textarea id="textarea-scanner"></textarea>
+
+    </div>
+
+    <div id="tab3">
+        <h1>Changing application to PIM Analyzer mode</h1>
+    </div>
+
+    <script type="text/javascript">
+        function toggleTab(num) {
+            for (var i = 1; i <= 3; i++) {
+                document.getElementById('tab'+i).style.display = "none";
+            }
+            document.getElementById('tab'+num).style.display = "block";
+            toggleScreen(num);
         }
-    });
 
-    // 04
-    function sendCommand(){
-        var command = document.getElementById("command").value;
-        var address = document.getElementById("allDevices").value;
-        socket.emit('command', {addr: address, cmd: command});
-    }
-
-    // 05
-    socket.on('command-success', function(data){
-        console.log("command success", data);
-    });
-
-    function scannerInit() {
-        document.getElementById("scanner").addEventListener("input", function (){
-            scannerDetect(this.value);
-        });
-    }
-
-    function scannerReset(){
-        document.getElementById("scanner").disabled = false;
-        document.getElementById("scanner").value = "";
-        document.getElementById("scanner").focus();
-    }
-
-    function scannerPause() {
-        document.getElementById("scanner").disabled = true;
-    }
-
-    function scannerDetect(value){
-        scannerPause();
-        storeCableInfo(value);
-    }
-
-
-    function storeCableInfo(value){
-        var timer = setTimeout(function(){
-            clearInterval(timer);
-            console.log("value stored: ", value);
-            scannerReset();
-        }, 2000);
-    }
-
-    scannerInit();
-
-
-
+        toggleTab(1);
     </script>
+    
 </body>
 </html>
